@@ -15,7 +15,7 @@
     <meta name="twitter:image" content="https://46memorybit.github.io/talk/nagisatalk.png?v=2">
     <script type="text/javascript">
         window.onload = function() {
-            var url = "twitter://post?message=%23nagisatalk%0Ahttps%3A%2F%2F46memorybit.github.io%2Ftalk%2Fnagisatalk.html1";
+            var url = "twitter://post?message=%23nagisatalk%0Ahttps%3A%2F%2F46memorybit.github.io%2Ftalk%2Fnagisatalk1.html";
 
             // X アプリ版を直接起動
             window.location.href = url;
@@ -24,6 +24,6 @@
 </head>
 <body>
     <h1>リダイレクト中です。自動的に遷移しない場合は、↻を押してページを再読み込みしてください。</h1>
-    <p>PC版は<a href="https://twitter.com/intent/tweet?text=%23nagisatalk%0Ahttps%3A%2F%2F46memorybit.github.io%2Ftalk%2Fnagisatalk.html1">こちら</a></p>
+    <p>PC版は<a href="https://twitter.com/intent/tweet?text=%23nagisatalk%0Ahttps%3A%2F%2F46memorybit.github.io%2Ftalk%2Fnagisatalk1.html">こちら</a></p>
 </body>
 </html>
