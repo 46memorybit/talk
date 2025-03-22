@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>リダイレクト中...</title>
+    <!-- OGP 基本情報 -->
+    <meta property="og:title" content="#nagisatalk でポストしよう！">
+    <meta property="og:description" content="櫻坂46・小島凪紗からの最新トークをチェックしよう！応援の気持ちを込めて、みんなで盛り上がろう！">
+    <meta property="og:image" content="https://46memorybit.github.io/talk/nagisatalk.png?v=2">
+    <meta property="og:url" content="https://46memorybit.github.io/talk/nagisatalk1.html">
+    <!-- Twitterカードの設定 -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@46memorybit">
+    <meta name="twitter:title" content="#nagisatalk でポストしよう！">
+    <meta name="twitter:description" content="櫻坂46・小島凪紗からの最新トークをチェックしよう！応援の気持ちを込めて、みんなで盛り上がろう！">
+    <meta name="twitter:image" content="https://46memorybit.github.io/talk/nagisatalk.png?v=2">
+    <script type="text/javascript">
+        window.onload = function() {
+            var url = "twitter://post?message=%23nagisatalk%0Ahttps%3A%2F%2F46memorybit.github.io%2Ftalk%2Fnagisatalk.html1";
+
+            // X アプリ版を直接起動
+            window.location.href = url;
+        };
+    </script>
+</head>
+<body>
+    <h1>リダイレクト中です。自動的に遷移しない場合は、↻を押してページを再読み込みしてください。</h1>
+    <p>PC版は<a href="https://twitter.com/intent/tweet?text=%23nagisatalk%0Ahttps%3A%2F%2F46memorybit.github.io%2Ftalk%2Fnagisatalk.html1">こちら</a></p>
+</body>
+</html>
