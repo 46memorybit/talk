@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>YouTube アプリを起動</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    const youtubeUrl = 'https://youtu.be/ReuFa_D1Vok';
+    const youtubeAppUrl = 'vnd.youtube:ReuFa_D1Vok'; // YouTubeのURIスキーム（iOS/一部Android対応）
+
+    function openYouTube() {
+      // アプリ用URLにリダイレクト
+      window.location = youtubeAppUrl;
+      // アプリが起動しなかった場合、ウェブ版にフォールバック
+      setTimeout(() => {
+        window.location = youtubeUrl;
+      }, 2000);
+    }
+
+    window.onload = openYouTube;
+  </script>
+</head>
+<body>
+  <p>アプリを起動中です。開かない場合は <a href="https://youtu.be/ReuFa_D1Vok">こちら</a> をクリックしてください。</p>
+</body>
+</html>
