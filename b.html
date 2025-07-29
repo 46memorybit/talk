@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>XouXube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(135deg, #f0f4ff, #ffffff);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      font-size: 2rem;
+      color: #222;
+      margin-bottom: 0.5em;
+    }
+    p {
+      font-size: 1rem;
+      margin-bottom: 1em;
+    }
+    form {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+    }
+    input, textarea, button {
+      width: 100%;
+      font-size: 1rem;
+      margin-top: 0.5em;
+      padding: 0.8em;
+      border-radius: 0.5em;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      background: #007aff;
+      color: white;
+      font-weight: bold;
+      margin-top: 1em;
+      border: none;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #005ecb;
+    }
+    #thumbnail {
+      margin-top: 1em;
+      max-width: 100%;
+      border-radius: 1rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+    #result {
+      margin-top: 2em;
+      text-align: center;
+      display: none;
+    }
+    #generatedUrl {
+      width: 100%;
+      padding: 0.5em;
+      margin-top: 0.5em;
+      font-size: 0.9rem;
+    }
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1em;
+      flex-wrap: wrap;
+    }
+    .btn-group button {
+      flex: 1;
+      min-width: 100px;
+    }
+    .x-post-button {
+      background: #000;
+      color: white;
+      font-weight: bold;
+    }
+    .x-post-button:hover {
+      background: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>XouXube</h1>
+  <p>YouTube URLからX投稿リンクを作成して、アプリで再生しよう！</p>
+
+  <form id="urlForm">
+    <input type="url" id="youtubeUrl" placeholder="YouTubeのURLを入力（例: https://youtu.be/abc123）" required>
+    <textarea id="tweetText" placeholder="ツイート内容（任意、URLには含まれます）"></textarea>
+    <button type="submit">リンク生成</button>
+  </form>
+
+  <div id="result">
+    <img id="thumbnail" src="" alt="サムネイル画像">
+    <p>生成されたURL：</p>
+    <input type="text" id="generatedUrl" readonly>
+    <div class="btn-group">
+      <button onclick="openGeneratedUrl()">開く</button>
+      <button class="x-post-button" onclick="postToX()">Xでポスト</button>
+      <button onclick="copyUrl()">コピー</button>
+    </div>
+  </div>
+
+  <script>
+    function extractVideoId(url) {
+      try {
+        const parsedUrl = new URL(url);
+        const hostname = parsedUrl.hostname;
+        if (hostname.includes("youtu.be")) {
+          return parsedUrl.pathname.slice(1);
+        } else if (hostname.includes("youtube.com")) {
+          return parsedUrl.searchParams.get("v");
+        }
+      } catch (e) {
+        return null;
+      }
+      return null;
+    }
+
+    const form = document.getElementById('urlForm');
+    const resultDiv = document.getElementById('result');
+    const output = document.getElementById('generatedUrl');
+    const thumbnail = document.getElementById('thumbnail');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const urlInput = document.getElementById('youtubeUrl').value.trim();
+      const tweet = document.getElementById('tweetText').value.trim();
+      const videoId = extractVideoId(urlInput);
+
+      if (!videoId) {
+        alert("有効なYouTubeのURLを入力してください。");
+        return;
+      }
+
+      const v = encodeURIComponent(videoId);
+      const t = encodeURIComponent(tweet);
+      const baseUrl = location.origin + location.pathname;
+      const finalUrl = `${baseUrl}?v=${v}${t ? `&t=${t}` : ''}`;
+
+      output.value = finalUrl;
+      thumbnail.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+      thumbnail.alt = `サムネイル - ${videoId}`;
+      resultDiv.style.display = 'block';
+    });
+
+    function openGeneratedUrl() {
+      const url = document.getElementById('generatedUrl').value;
+      window.open(url, '_blank');
+    }
+
+    function copyUrl() {
+      const copyText = document.getElementById('generatedUrl');
+      copyText.select();
+      copyText.setSelectionRange(0, 99999);
+      document.execCommand("copy");
+      alert("コピーしました！");
+    }
+
+    function postToX() {
+      const url = document.getElementById('generatedUrl').value;
+      const tweetUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}`;
+      window.open(tweetUrl, '_blank');
+    }
+  </script>
+</body>
+</html>
