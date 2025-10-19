@@ -1,0 +1,201 @@
+以下は、PWAとしてホーム画面から起動→即時に **[https://usen.oshireq.com/song/6299592](https://usen.oshireq.com/song/6299592)** を開く最小構成です。フロントエンドのみでホスティング可能（GitHub Pages/Netlify等）。
+
+> 重要な仕様メモ
+>
+> * PWA（standalone）から **別ドメイン** へ遷移すると、OS/ブラウザの仕様上「外部ブラウザで開く」挙動になります（アプリ内にとどめることはできません）。
+> * アプリ内に表示し続けたい場合、`iframe`埋め込みが必要ですが、多くのサイトはセキュリティヘッダで埋め込みを禁止しています。その場合はリバースプロキシ（例：Cloudflare Workers で同一オリジン化）やネイティブラッパー（AndroidのTWA / iOSのWebViewアプリ）を検討してください。
+> * 本サンプルは「即時に外部ブラウザで開く」挙動を前提にしています。
+
+---
+
+## ファイル構成
+
+```
+/ (ドキュメントルート)
+├─ index.html            # 起動→即時リダイレクト
+├─ offline.html          # オフライン時のフォールバック
+├─ manifest.webmanifest  # PWAマニフェスト
+└─ sw.js                 # サービスワーカー（簡易キャッシュ）
+```
+
+---
+
+## index.html
+
+```html
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>USENリクエスト起動</title>
+
+    <!-- iOS用: スタンドアロン起動を許可 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="USEN起動" />
+
+    <!-- PWA manifest -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="theme-color" content="#111827" />
+
+    <noscript>
+      <meta http-equiv="refresh" content="0; url=https://usen.oshireq.com/song/6299592" />
+    </noscript>
+    <style>
+      html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+      .wrap { display:flex; align-items:center; justify-content:center; height:100%; text-align:center; background:#0b1220; color:#e5e7eb; }
+      .card { max-width: 560px; padding: 24px; border-radius: 16px; background: #111827; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+      .small { opacity:.8; font-size: 14px; }
+      a { color:#93c5fd; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1>起動中…</h1>
+        <p>USENリクエストページへ移動します。</p>
+        <p class="small">自動で移動しない場合は <a href="https://usen.oshireq.com/song/6299592">こちらをタップ</a></p>
+      </div>
+    </div>
+
+    <script>
+      (function(){
+        // PWAとしてのSW登録（失敗しても致命ではない）
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', function(){
+            navigator.serviceWorker.register('./sw.js').catch(()=>{});
+          });
+        }
+        // 即時遷移。外部ドメインなので多くの環境で外部ブラウザが開きます。
+        const TARGET = 'https://usen.oshireq.com/song/6299592';
+        // replace: 履歴に残さない
+        window.location.replace(TARGET);
+      })();
+    </script>
+  </body>
+</html>
+```
+
+---
+
+## offline.html
+
+```html
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>オフラインです</title>
+    <meta name="theme-color" content="#111827" />
+    <style>
+      html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+      .wrap { display:flex; align-items:center; justify-content:center; height:100%; text-align:center; background:#0b1220; color:#e5e7eb; }
+      .card { max-width: 560px; padding: 24px; border-radius: 16px; background: #111827; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+      a { color:#93c5fd; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1>オフラインです</h1>
+        <p>ネットワークに接続後、再度お試しください。</p>
+        <p><a href="/">リトライ</a></p>
+      </div>
+    </div>
+  </body>
+</html>
+```
+
+---
+
+## manifest.webmanifest
+
+```json
+{
+  "name": "USENリクエスト起動",
+  "short_name": "USEN起動",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
+```
+
+> ※ `icon-192.png` / `icon-512.png` は任意のPNGを追加してください。
+
+---
+
+## sw.js
+
+```js
+// 極めて簡単なオフライン対応
+const CACHE_NAME = 'pwa-redirect-v1';
+const ASSETS = [
+  '/',
+  '/index.html',
+  '/offline.html',
+  '/manifest.webmanifest'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => Promise.all(
+      keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+    ))
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  // 自サイトへのリクエストのみキャッシュ戦略
+  if (new URL(req.url).origin === self.location.origin) {
+    event.respondWith(
+      caches.match(req).then((res) => {
+        return res || fetch(req).catch(() => caches.match('/offline.html'));
+      })
+    );
+  }
+  // 外部はスルー（ブラウザ既定の動作に任せる）
+});
+```
+
+---
+
+## デプロイ手順（例：GitHub Pages）
+
+1. 上記4ファイルと `icon-192.png` / `icon-512.png` をリポジトリ直下に配置。
+2. GitHubリポジトリで **Settings → Pages** からデプロイ（Branch: `main` / folder: `/root` 推奨）。
+3. 公開URLにスマホでアクセス → 「ホーム画面に追加」。
+4. ホーム画面のアイコンから起動すると、即座に外部URL（USENページ）が開きます。
+
+---
+
+## よくある質問
+
+* **Q: アプリ内でUSENページを表示し続けたい**
+
+  * A: 多くのサイトは `X-Frame-Options` や `Content-Security-Policy` により`iframe`埋め込み不可です。PWA単体では回避できません。代替として、
+
+    1. 逆プロキシで同一オリジン化（Cloudflare Workers/Pages Functionsなど）、
+    2. AndroidはTWA、iOSはWebViewベースの薄いネイティブラッパー、
+       などを検討してください。
+
+* **Q: 通知（Push）もしたい**
+
+  * A: Web Pushは**独自のバックエンド**または外部サービス（例えば Firebase Cloud Messaging 等）が必要です。外部URLへ即リダイレクトするだけのPWAでは通知の購読UIを出す場所がないため、別途設定画面を用意するなど設計変更が必要です。
+
+---
+
+必要なら、リバースプロキシ版（Cloudflare Workersで `usen.oshireq.com` を中継し、同一オリジン化する実装例）も提示できます。アイコン画像の作成やMetaタグの微調整（OGP等）も対応します。
